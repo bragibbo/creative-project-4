@@ -12,24 +12,25 @@ app.use(bodyParser.urlencoded({
 }));
 // parse application/json
 app.use(bodyParser.json());
-app.use(cookieParser);
+
+// connect to the database
+mongoose.connect('mongodb://localhost:27017/creative4', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
-  key: ['secretValue'],
+  keys: ['secretValue'],
   cookie: {
     maxAge: 24 * 60 * 60 * 1000 // 24 hours in ms
   }
 }))
-
-// connect to the database
-mongoose.connect('mongodb://localhost:27017/todo', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
 
 const users = require('./routes/users');
 const students = require('./routes/students');
 app.use('/api/users', users.routes);
 app.use('/api/students', students.routes);
 
-app.listen(3001, () => console.log("Server is listening on port 3001!"))
+app.listen(3000, () => console.log("Server is listening on port 3000!"));

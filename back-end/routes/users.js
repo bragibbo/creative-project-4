@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const argon2 = require('argon2');
-const { default: router } = require('../../front-end/src/router');
+
+const router = express.Router();
 
 // User database collection model
 const userSchema = new mongoose.Schema({
@@ -15,13 +16,13 @@ const userSchema = new mongoose.Schema({
     },
     email: String,
     gender: String,
-})
+});
 
 // Method to compare the password to the db password
 userSchema.methods.comparePassword = async function(password) {
   try {
-    const isMatch = await argon2.verify(this.password, password)
-    return isMatch
+    const isMatch = await argon2.verify(this.password, password);
+    return isMatch;
   } catch (error) {
     return false;
   }
@@ -36,27 +37,20 @@ userSchema.methods.toJSON = function () {
 
 // Hash the password before saving
 userSchema.pre('save', async function(next) {
+  // only hash the password if it has been modified (or is new)
   if (!this.isModified('password'))
     return next();
 
   try {
+    // generate a hash. argon2 does the salting and hashing for us
     const hash = await argon2.hash(this.password);
+    // override the plaintext password with the hashed one
     this.password = hash;
     next();
   } catch (error) {
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
-
-// Set _id to be identifiable id 
-userSchema.virtual('id')
-  .get(function() {
-    return this._id.toHexString();
-  });
-
-// Use the virtuals when converting the model to Json
-userSchema.set('toJSON', {
-	virtuals: true
 });
 
 const User = mongoose.model("User", userSchema);
@@ -70,7 +64,7 @@ const validateUser = async (req, res, next) => {
 
   try {
     const user = await User.findOne({
-      id: req.session.userID
+      _id: req.session.userID
     });
     if (!user) {
       return res.status(403).send({
@@ -84,6 +78,8 @@ const validateUser = async (req, res, next) => {
       message: "not logged in"
     });
   }
+
+  next()
 }
 
 // User Registration
@@ -121,15 +117,25 @@ router.post('/login', async (req, res) => {
   if(!req.body.username || !req.body.password) return res.sendStatus(400);
 
   try {
-    const user = User.findOne({ username: req.body.username });
-    if (!user || !await user.comparePassword(req.body.password)) {
-      return res.status(403).send({ message: 'username or password is wrong' });
-    }
+    const user = await User.findOne({ username: req.body.username });
+    // Return an error if user does not exist.
+    if (!user)
+      return res.status(403).send({
+        message: "username or password is wrong"
+      });
+
+    // Return the SAME error if the password is wrong. This ensure we don't
+    // leak any information about which users exist.
+    if (!await user.comparePassword(req.body.password))
+      return res.status(403).send({
+        message: "username or password is wrong"
+      });
 
     req.session.userID = (await user)._id;
     return res.send({ user: user });
 
   } catch (err) {
+    console.log(err)
     return res.sendStatus(500);
   }
 });
