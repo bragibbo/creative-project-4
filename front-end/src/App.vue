@@ -3,19 +3,36 @@
     <div class="content">
       <div class="nav">
       </div>
-      <Dashboard/>
+      <Dashboard v-if="user"/>
+      <LandingPage v-else />
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
 import Dashboard from './views/Dashboard'
+import LandingPage from './views/LandingPage'
 
 export default {
   name: 'App',
   components: {
-    Dashboard
-  }
+    Dashboard,
+    LandingPage
+  },
+  computed: {
+    user() {
+      return this.$root.$data.user
+    }
+  },
+  async created() {
+    try {
+      let response = await axios.get("/api/users");
+      this.$root.$data.user = response.data.user;
+    } catch (error) {
+      this.$root.$data.user = null;
+    }
+  },
 
 }
 </script>
