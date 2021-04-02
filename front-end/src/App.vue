@@ -2,6 +2,12 @@
   <div id="app">
     <div class="content">
       <div class="nav">
+        <div class="text-header d-flex flex-row w-100 align-items-center justify-content-end"  v-if="user">
+          <div class="text-white">Logged in as: {{ user.firstName }} {{ user.lastName }}</div>
+          <button @click="logout" class="ml-4 btn btn-primary text-header">
+            Logout
+          </button>
+        </div>
       </div>
       <Dashboard v-if="user"/>
       <LandingPage v-else />
@@ -33,7 +39,16 @@ export default {
       this.$root.$data.user = null;
     }
   },
-
+  methods: {
+    async logout() {
+      try {
+        await axios.delete("/api/users");
+        this.$root.$data.user = null;
+      } catch (error) {
+        this.$root.$data.user = null;
+      }
+    },
+  }
 }
 </script>
 
@@ -48,13 +63,17 @@ export default {
   color: #2c3e50;
 }
 
+.text-header {
+  font-size: .75rem !important;
+}
+
 .content {
   height: 100%;
 }
 
 .nav {
   background: var(--secondaryBlue);
-  padding: 30px;
+  padding: 20px;
   box-shadow: 0px 1px 10px;
 }
 
