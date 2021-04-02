@@ -52,6 +52,16 @@ router.post('/', validateUser, async (req, res) => {
   }
 });
 
+router.get('/:id', validateUser, async (req, res) => {
+  try {
+    let student = await Student.findOne({ _id: req.params.id }).populate('student');
+    res.send({ student: student });
+  } catch(error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+});
+
 router.get('/', validateUser, async (req, res) => {
   try {
     let students = await Student.find({ teacher: req.user }).populate('student');
@@ -62,18 +72,25 @@ router.get('/', validateUser, async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateUser, async (req, res) => {
   try {
     let student = await Student.findOne({
-      _id: req.params._id
+      _id: req.params.id
     });
-    student.student.firstName = req.body.firstName;
-    student.student.lastName = req.body.lastName;
-    student.student.email = req.body.email;
-    student.student.price = req.body.price;
-    student.student.gender = req.body.gender;
-    student.student.lessonLength = req.body.lessonLength
-    student.save();
+
+    let studentUser = await User.findOne({
+      _id: student.student
+    })
+    student.price = req.body.price;
+    student.lessonLength = req.body.lessonLength;
+
+    studentUser.firstName = req.body.firstName;
+    studentUser.lastName = req.body.lastName;
+    studentUser.email = req.body.email;
+    studentUser.gender = req.body.gender;
+
+    await student.save();
+    await studentUser.save();
     res.sendStatus(200);    
   } catch (error) {
     console.log(error);
@@ -81,7 +98,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateUser, async (req, res) => {
   try {
     await Student.deleteOne({
       _id: req.params.id

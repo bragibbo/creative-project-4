@@ -2,13 +2,13 @@
   <div class="d-flex schedule justify-content-between">
     <div class="section calendar d-flex flex-column">
       <h3>{{days[schedule.dayOfWeek]}}</h3>
-      <div v-for="index in times" :key="index">
-        <HourCard :hourData="schedule[index]" @delete="(e) => deleteFromSchedule(e)" />
+      <div v-for="index in times" :key="times[index]">
+        <HourCard :hourData="schedule[index]" @delete="createSchedule" />
       </div>
     </div>
     <div class="section add">
       <h3>Schedule a Time</h3>
-      <ScheduleAdd :hours="times" @add="(e) => addToSchedule(e)"/>
+      <ScheduleAdd :hours="times" @add="createSchedule"/>
     </div>
   </div>
 </template>
@@ -17,6 +17,7 @@
 import moment from 'moment'
 import ScheduleAdd from './ScheduleAdd'
 import HourCard from './ScheduleHourCard'
+import axios from 'axios';
 
 export default{
   name: 'Schedule',
@@ -34,33 +35,42 @@ export default{
     ScheduleAdd,
     HourCard
   },
-  created() {
-    this.schedule ={
-      date: this.date,
-      dayOfMonth: this.date.getDate(),
-      dayOfWeek: this.date.getDay()
-    }
-    for(let i=this.startTime; i <= this.endTime; i++) {
-      this.times.push(i)
-      this.$set(this.schedule, i, {
-        label: i,
-        hour: moment(i, 'HH').format('h a'),
-        appointments: []
-      })
-    }
-
-    const schedule = this.$root.$data.schedule
-    for(let i=0; i < schedule.length; i++) {
-      this.schedule[schedule[i].hour].appointments.push(schedule[i])
-    }
+  async created() {
+    await this.createSchedule();
   },
   methods: {
-    addToSchedule(e) {
-      this.$set(this.schedule[e.hour].appointments, this.schedule[e.hour].appointments.length, e)
+    async createSchedule() {
+      let tmpSchedule = {}
+      const schedule = await this.getSchedule()    
+
+      tmpSchedule ={
+        date: this.date,
+        dayOfMonth: this.date.getDate(),
+        dayOfWeek: this.date.getDay()
+      }
+      for(let i=this.startTime; i <= this.endTime; i++) {
+        this.times.push(i)
+        this.$set(tmpSchedule, i, {
+          label: i,
+          hour: moment(i, 'HH').format('h a'),
+          appointments: []
+        })
+      }
+
+      for(let i=0; i < schedule.length; i++) {
+        tmpSchedule[schedule[i].time].appointments.push(schedule[i])
+      }
+
+      Object.assign(this.schedule, tmpSchedule)
     },
-    deleteFromSchedule(e) {
-      this.schedule[e.hour].appointments = this.schedule[e.hour].appointments.filter(item => item.firstName !== e.firstName && item.lastName !== e.lastName)
-    }
+    async getSchedule() {
+      try {
+        const response = await axios.get('/api/schedule/')
+        return response.data.schedules
+      } catch (error) {
+        console.log(error)
+      }
+    },
   }
 }
 </script>

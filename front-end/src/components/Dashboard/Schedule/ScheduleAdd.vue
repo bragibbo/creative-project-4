@@ -1,12 +1,14 @@
 <template>
   <form>
     <div class="d-flex flex-column input my-2">
-      <label for="first_name">First Name</label>
-      <input id="first_name" v-model="firstName" type="text" />
-    </div>
-    <div class="d-flex flex-column input my-2">
-      <label for="last_name">Last Name</label>
-      <input id="last_name" v-model="lastName" type="text" />
+      <label for="hour-select">Select Student</label>
+      <v-select 
+        id="student-select" 
+        class="w-50" 
+        v-model="selectedStudent" 
+        :get-option-label="option => `${option.student.firstName} ${option.student.lastName}`" 
+        :options="students"
+      />
     </div>
     <div class="d-flex flex-column input my-2">
       <label for="hour-select">Hour to Schedule</label>
@@ -24,6 +26,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   props: {
     hours: Array,
@@ -33,26 +37,43 @@ export default {
       firstName: '',
       lastName: '',
       selectedHour: '',
-      errors: []
+      selectedStudent: '',
+      errors: [],
+      students: [],
     }
   },
+  async created() {
+    await this.getStudents()
+  },
   methods: {
-    submit() {
+    async getStudents () {
+      try {
+        let response = await axios.get("/api/students");
+        this.students = response.data.students;
+      } catch (error) {
+        this.students = [];
+      }
+    },
+    async submit() {
       this.errors = []
-      if (!this.firstName || !this.lastName || !this.selectedHour) {
-        if(!this.firstName) this.errors.push('Missing student first name')
-        if(!this.lastName) this.errors.push('Missing student last name')
+      if (!this.selectedStudent || !this.selectedHour) {
+        if(!this.selectedStudent) this.errors.push('Must select a student')
         if(!this.selectedHour) this.errors.push('Missing a selected hour')
       } else {
-        this.$emit('add', {
-          firstName: this.firstName,
-          lastName: this.lastName,
-          hour: this.selectedHour
-        })
-
-        this.firstName = ''
-        this.lastName = ''
+        await this.sendSchedule();
+        this.$emit('add')
+        this.selectedStudent = '';
         this.selectedHour = ''
+      }
+    },
+    async sendSchedule() {
+      try {
+      await axios.post("/api/schedule/", {
+        id: this.selectedStudent._id,
+        time: this.selectedHour
+      });
+      } catch (error) {
+        console.log(error);
       }
     }
   }
@@ -60,6 +81,10 @@ export default {
 </script>
 
 <style scoped>
+.student-select {
+ 
+}
+
 .btn {
   font-size: 1rem;
 }

@@ -3,8 +3,8 @@
     <div class="time-slot grid-item">{{hourData.hour}}</div>
     <div class="grid-item">
       <div class="d-flex flex-column w-100">
-        <div class="grid-container-names my-2" v-for="(item, index) in hourData.appointments" :key="index">
-          <div class="d-flex flex-column align-items-start">{{item.firstName}} {{item.lastName}}</div>
+        <div class="grid-container-names my-2" v-for="item in hourData.appointments" :key="JSON.stringify(item)">
+          <div class="d-flex flex-column align-items-start">{{item.student.firstName}} {{item.student.lastName}}</div>
           <div class="delete-button grid-items">
             <button class="btn btn-outline-danger" @click="(index) => submit(item)">X</button>
           </div>
@@ -15,13 +15,21 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   props: {
     hourData: Object
   },
   methods: {
-    submit(item) {
-      this.$emit('delete', item)
+    async submit(item) {
+
+      try {
+        axios.delete('/api/schedule/' + item._id)
+        this.$emit('delete')
+      } catch (err) {
+        console.log(err)
+      }
     }
   }
 }
