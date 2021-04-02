@@ -67,7 +67,7 @@ export default {
       }
     },
     editStudent(student) {
-      this.$router.push({name: "EditStudent", query: {id: student.id}});
+      this.$router.push({name: "EditStudent", query: {id: student._id}});
     }
   }
 }

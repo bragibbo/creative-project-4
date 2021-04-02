@@ -1,7 +1,7 @@
 <template>
 <div class="page">
   <h1>Edit Student</h1>
-  <form v-if="creating" @submit.prevent="saveStudent">
+  <form @submit.prevent="saveStudent">
     <input v-model="firstName" placeholder="First Name">
     <br>
     <input v-model="lastName" placeholder="Last Name">
@@ -12,18 +12,21 @@
     <br>
     <v-select class='dropdown' v-model="gender" :options="genderOptions" placeholder="Gender"/>
     <v-select class='dropdown' v-model="lessonLength" :options="lessonLengthOptions" placeholder="Lesson Length"/>
-
+    <div class="d-flex flex-column input" v-for="(error, index) in errors" :key="index">
+      <div class="errors">{{error}}</div>
+    </div><br/>
     <button class="submit-button btn btn-outline-primary" type="submit">Save</button>
   </form>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'create',
   data() {
     return {
-      creating: true,
       id: '',
       firstName: '',
       lastName: '',
@@ -32,24 +35,35 @@ export default {
       gender: '',
       lessonLength: '',
       genderOptions: ["M","F"],
-      lessonLengthOptions: ["30 min", "45 min", "60 min"]
+      lessonLengthOptions: ["30 min", "45 min", "60 min"],
+      errors: []
     }
   },
   methods: {
-    toggleForm() {
-      this.creating = !this.creating;
-    },
-    saveStudent() {
-      this.$root.$data.saveStudent(this.id, this.firstName, this.lastName, this.email, this.billingPrice, this.gender, this.lessonLength);
-      this.$router.push("Students");
-    },
-    today() {
-        var today = new Date();
-        var dd = today.getDate();
+    async saveStudent() {
+      this.errors = [];
+      this.errorLogin = '';
+      if(!this.firstName || !this.lastName || !this.email || !this.gender) {
+        if(!this.firstName) this.errors.push('Missing student first name')
+        if(!this.lastName) this.errors.push('Missing student last name')
+        if(!this.email) this.errors.push('Missing student email')
+        if(!this.gender) this.errors.push('Missing student gender')
+        return false;
+      }
 
-        var mm = today.getMonth()+1; 
-        var yyyy = today.getFullYear();
-        return mm + "/" + dd + "/" + yyyy;
+      try {
+        await axios.put('/api/students/' + this.id, {
+          firstName: this.firstName,
+          lastName: this.lastName,
+          gender: this.gender,
+          email: this.email,
+          price: this.formatBillingPrice(),
+          lessonLength: this.lessonLength
+        })
+        this.$router.push("Students");
+      } catch (error) {
+        this.errors.push("Error saving student");      
+      }
     },
     formatBillingPrice() {
         let price = this.billingPrice;
@@ -67,30 +81,35 @@ export default {
         return price;
     }
   },
-  computed: {
-
-  },
-  created() {
-      const userID = this.$route.query.id;
-      const userOBJ = this.$root.$data.students.find(item => item.id === userID);
-      console.log(userOBJ);
-      this.id = userOBJ.id;
-      this.firstName = userOBJ.first_name;
-      this.lastName = userOBJ.last_name;
-      this.email = userOBJ.email;
-      this.billingPrice = userOBJ.billing_price;
-      this.gender = userOBJ.gender;
-      this.lessonLength = userOBJ.lesson_length;
-
+  async created() {
+    this.errors = []
+    try {
+      const response = await axios.get('/api/students/' + this.$route.query.id)
+      const student = response.data.student;
+      this.id = student._id;
+      this.firstName = student.student.firstName;
+      this.lastName = student.student.lastName;
+      this.email = student.student.email;
+      this.billingPrice = student.price;
+      this.gender = student.student.gender;
+      this.lessonLength = student.lessonLength;
+    } catch (error) {
+      this.errors.push(error);
+    }
   }
 }
 </script>
 
 <style scoped>
+.errors {
+  color: red;
+}
+
 input {
-  font-size: 1.2em;
   height: 30px;
   width: 200px;
+  width: 100%;
+  margin-bottom:.5rem;
 }
 
 textarea {
@@ -115,11 +134,6 @@ form {
     
 }
 
-input {
-    width: 100%;
-    margin-bottom:.5rem;
-}
-
 .submit-button {
     margin: 0;
 }
@@ -129,6 +143,4 @@ input {
     flex-direction: column;
     align-items: center;
 }
-
-
 </style>

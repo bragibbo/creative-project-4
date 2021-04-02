@@ -39,9 +39,7 @@ export default {
         this.students = [];
       }
     },
-  },
-  computed: {
-  },
+  }
 }
 </script>
 
