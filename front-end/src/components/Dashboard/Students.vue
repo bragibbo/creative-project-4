@@ -8,13 +8,14 @@
   </div>
 
   <div class="students">
-    <StudentTable :students="studentData"/>
+    <StudentTable :students="students"/>
   </div>
 
 </div>
 </template>
 
 <script>
+import axios from 'axios'
 import StudentTable from "./Students/StudentTable.vue"
 export default {
   name: 'Students',
@@ -23,16 +24,23 @@ export default {
   },
   data() {
    return {
-     
+     students: []
    }
   },
+  async created() {
+    await this.getStudents()
+  },
   methods: {
-
+    async getStudents () {
+      try {
+        let response = await axios.get("/api/students");
+        this.students = response.data.students;
+      } catch (error) {
+        this.students = [];
+      }
+    },
   },
   computed: {
-    studentData() {
-      return this.$root.$data.students;
-    }
   },
 }
 </script>

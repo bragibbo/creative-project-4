@@ -21,19 +21,19 @@
   <div class="student-table"   v-for="student in students" :key="student.id">
     <div class="grid-container">
       <div class="grid-item">
-        {{student.last_name}}, {{student.first_name}}
+        {{student.student.lastName}}, {{student.student.firstName}}
       </div>
       <div class="grid-item">
-        {{student.gender}}
+        {{student.student.gender}}
       </div>
       <div class="grid-item">
-        {{student.email}}
+        {{student.student.email}}
       </div>
       <div class="grid-item">
-        {{student.student_since}}
+        {{student.startDate}}
       </div>
       <div class="grid-item">
-        {{student.billing_price}}
+        {{student.price}}
       </div>
       <div class="grid-item remove">
         <button class="btn btn-outline-primary btn-sm mr-2" @click='editStudent(student)'>edit</button>
