@@ -84,7 +84,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     await Student.deleteOne({
-      _id: req.params._id
+      _id: req.params.id
     });
     res.sendStatus(200);
   } catch (error) {

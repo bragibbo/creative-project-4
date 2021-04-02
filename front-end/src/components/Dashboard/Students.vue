@@ -8,7 +8,7 @@
   </div>
 
   <div class="students">
-    <StudentTable :students="students"/>
+    <StudentTable :students="students" @delete="getStudents" />
   </div>
 
 </div>

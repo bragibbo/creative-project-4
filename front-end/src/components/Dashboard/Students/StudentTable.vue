@@ -37,7 +37,7 @@
       </div>
       <div class="grid-item remove">
         <button class="btn btn-outline-primary btn-sm mr-2" @click='editStudent(student)'>edit</button>
-        <button class="btn btn-outline-danger btn-sm my-1" @click='removeStudent(student)'>Delete Student</button>
+        <button class="btn btn-outline-danger btn-sm my-1" @click='() => removeStudent(student)'>Delete Student</button>
       </div>
     </div>
   </div>
@@ -45,14 +45,26 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   name: 'StudentTable',
   props: {
-    students: Array
+    students: Array,
+  },
+  data() {
+    return {
+      error: ''
+    }
   },
   methods: {
-    removeStudent(student) {
-      this.$root.$data.remove(student);
+    async removeStudent(student) {
+      this.error = '';
+      try {
+        await axios.delete('/api/students/' + student._id)
+        this.$emit('delete')
+      } catch (error) {
+        this.error = error;
+      }
     },
     editStudent(student) {
       this.$router.push({name: "EditStudent", query: {id: student.id}});
