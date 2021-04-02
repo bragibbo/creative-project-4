@@ -23,7 +23,6 @@ export default {
   },
   methods: {
     async submit(item) {
-
       try {
         axios.delete('/api/schedule/' + item._id)
         this.$emit('delete')

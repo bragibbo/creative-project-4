@@ -3,7 +3,7 @@
     <div class="section calendar d-flex flex-column">
       <h3>{{days[schedule.dayOfWeek]}}</h3>
       <div v-for="index in times" :key="times[index]">
-        <HourCard :hourData="schedule[index]" @delete="createSchedule" />
+        <HourCard :hourData="schedule[index] || {}" @delete="createSchedule" />
       </div>
     </div>
     <div class="section add">
@@ -36,32 +36,33 @@ export default{
     HourCard
   },
   async created() {
+    for(let i=this.startTime; i <= this.endTime; i++) {
+      this.times.push(i)
+    }
+
     await this.createSchedule();
   },
   methods: {
     async createSchedule() {
-      let tmpSchedule = {}
-      const schedule = await this.getSchedule()    
+      this.schedule = {}
+      const returnedSchedule = await this.getSchedule()    
 
-      tmpSchedule ={
+      this.schedule ={
         date: this.date,
         dayOfMonth: this.date.getDate(),
         dayOfWeek: this.date.getDay()
       }
       for(let i=this.startTime; i <= this.endTime; i++) {
-        this.times.push(i)
-        this.$set(tmpSchedule, i, {
+        this.$set(this.schedule, i, {
           label: i,
           hour: moment(i, 'HH').format('h a'),
           appointments: []
         })
       }
 
-      for(let i=0; i < schedule.length; i++) {
-        tmpSchedule[schedule[i].time].appointments.push(schedule[i])
+      for(let i=0; i < returnedSchedule.length; i++) {
+        this.schedule[returnedSchedule[i].time].appointments.push(returnedSchedule[i])
       }
-
-      Object.assign(this.schedule, tmpSchedule)
     },
     async getSchedule() {
       try {
