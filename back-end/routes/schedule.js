@@ -25,7 +25,7 @@ router.get('/', validateUser, async (req, res) => {
     let schedules = await Schedule.find({ teacher: req.user }).populate('student');
     res.send({ schedules: schedules });
   } catch(error) {
-    console.log(error);
+    // console.log(error);
     res.sendStatus(500);
   }
 });
@@ -52,7 +52,7 @@ router.post('/', validateUser, async (req, res) => {
 
     res.send({ schedule: schedule });
   } catch(error) {
-    console.log(error);
+    // console.log(error);
     res.sendStatus(500);
   }
 });
@@ -64,7 +64,7 @@ router.delete('/:id', validateUser, async (req, res) => {
     });
     res.sendStatus(200);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.sendStatus(500);
   }
 });

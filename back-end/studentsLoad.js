@@ -51,4 +51,4 @@ const load = async () => {
   })
 }
 
-load().then(() => {console.log('Success!')}).catch(err => console.log(err))
+load()//.then(() => {console.log('Success!')}).catch(err => console.log(err))

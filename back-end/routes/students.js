@@ -47,7 +47,7 @@ router.post('/', validateUser, async (req, res) => {
     await student.save();
     res.send({ student: student });
   } catch(error) {
-    console.log(error);
+    // console.log(error);
     res.sendStatus(500);
   }
 });
@@ -57,7 +57,7 @@ router.get('/:id', validateUser, async (req, res) => {
     let student = await Student.findOne({ _id: req.params.id }).populate('student');
     res.send({ student: student });
   } catch(error) {
-    console.log(error);
+    // console.log(error);
     res.sendStatus(500);
   }
 });
@@ -67,7 +67,7 @@ router.get('/', validateUser, async (req, res) => {
     let students = await Student.find({ teacher: req.user }).populate('student');
     res.send({ students: students });
   } catch(error) {
-    console.log(error);
+    // console.log(error);
     res.sendStatus(500);
   }
 });
@@ -93,7 +93,7 @@ router.put('/:id', validateUser, async (req, res) => {
     await studentUser.save();
     res.sendStatus(200);    
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.sendStatus(500);
   }
 });
@@ -105,7 +105,7 @@ router.delete('/:id', validateUser, async (req, res) => {
     });
     res.sendStatus(200);
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.sendStatus(500);
   }
 });

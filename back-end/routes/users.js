@@ -135,7 +135,7 @@ router.post('/login', async (req, res) => {
     return res.send({ user: user });
 
   } catch (err) {
-    console.log(err)
+    // console.log(err)
     return res.sendStatus(500);
   }
 });
