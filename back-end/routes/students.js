@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const Users = require('./users').model;
+const User = require('./users').model;
 const validateUser = require('./users').valid;
 
 const router = express.Router();
@@ -41,7 +41,7 @@ router.post('/', validateUser, async (req, res) => {
       teacher: req.user,
       student: studentUser,
       price: req.body.price,
-      startDate: (new Date()).toUTCString(),
+      startDate: req.body.startDate,
       lessonLength: parseInt(req.body.lessonLength)
     })
     await student.save();
